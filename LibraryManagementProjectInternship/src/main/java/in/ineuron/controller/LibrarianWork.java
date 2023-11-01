@@ -22,8 +22,8 @@ import in.ineuron.servicefactory.BookServiceFactory;
 import in.ineuron.servicefactory.LibrarianServiceFactory;
 import in.ineuron.servicefactory.StudentServiceFactory;
 
-@WebServlet("/studentwork/*")
-public class StudentWork extends HttpServlet {
+@WebServlet("/librarianwork/*")
+public class LibrarianWork extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -39,40 +39,150 @@ public class StudentWork extends HttpServlet {
 			throws ServletException, IOException {
 		// TODO Auto-generated method stub
 		HttpSession session = request.getSession();
-		IStudentService service = StudentServiceFactory.getStudentService();
+		ILibrarianService service = LibrarianServiceFactory.getLibrarianService();
 		IBookService bookService = BookServiceFactory.getLibrarianService();
 		System.out.println(request.getRequestURI());
 
-		if (request.getRequestURI().endsWith("stdlogin")) {
-			String id = request.getParameter("loginid");
-			String password = request.getParameter("password");
-			String role = service.verifyStudent(Integer.parseInt(id), password);
-			session.setAttribute("role", role);
-			session.setAttribute("id", id);
+		if (request.getRequestURI().endsWith("IssueBook")) {
+			String loginResult="success";
+			String role = (String) session.getAttribute("role");
+			String id = (String) session.getAttribute("id");
+			//String role = service.verifyStudent(Integer.parseInt(id), password);
+			//session.setAttribute("role", role);
+			//session.setAttribute("id", id);
+			if (role == null || !role.equalsIgnoreCase("lib")) {
+				loginResult = "failure";
+			} else {
 			RequestDispatcher rd = null;
 			request.setAttribute("role", role);
-			System.out.println(role);
-			rd = request.getRequestDispatcher("../JSP/StudentWork/StudentHomePage.jsp");
+			
+			List<BookHistory> bookRequestList = bookService.getBookRequest();
+			
+			for (BookHistory bookHistory : bookRequestList) {
+				System.out.println(bookHistory);
+			}
+			
+			//request.setAttribute("role", role);
+			//request.setAttribute("id", id);
+			request.setAttribute("loginResult", loginResult);
+			request.setAttribute("bookRequestList", bookRequestList);
+			System.out.println(id+"librarian work");
+			
+			rd = request.getRequestDispatcher("../JSP/LibrarianWork/PendingRequest.jsp");
 			rd.forward(request, response);
-
+			}
 		}
+		
+		if (request.getRequestURI().endsWith("approvebook")) {
+			String loginResult="success";
+			String role = (String) session.getAttribute("role");
+			String id = (String) session.getAttribute("id");
+			String bhid = request.getParameter("reqid");
+			String bookid = request.getParameter("bookid");
+			String bookname = request.getParameter("bookname");
+			String bookcategory = request.getParameter("author");
+			String category = request.getParameter("category");
+			String reqdate = request.getParameter("reqdate");
+			String approveStatus = "failure";
+			String bookUpdateStatus = "failure";
+			
+			System.out.println(bookcategory+" "+bookname+" "+category+" "+reqdate+" "+bookid);
+			
+			if (role == null || !role.equalsIgnoreCase("lib")) {
+				loginResult = "failure";
+			} else {
+				
+				
+				String status = bookService.getQty(Integer.parseInt(/*bhid*/bookid),Integer.parseInt(id));
+				System.out.println(status+"update");
+				if(status.equalsIgnoreCase("success")) {
+					bookUpdateStatus = bookService.updateBookQty(Integer.parseInt(bookid));
+				}
+				
+				if(bookUpdateStatus.equalsIgnoreCase("success")) {
+					approveStatus = bookService.approveBook(Integer.parseInt(bhid),Integer.parseInt(id));
+				}
+				
+				
+				RequestDispatcher rd = null;
+				request.setAttribute("loginResult", loginResult);
+				request.setAttribute("status", status);
+				request.setAttribute("bookUpdateStatus", bookUpdateStatus);
+				request.setAttribute("approveStatus", approveStatus);
+				
+				rd = request.getRequestDispatcher("../../JSP/LibrarianWork/IssueBook.jsp");
+				rd.forward(request, response);
+			}
+		}
+		
+		if (request.getRequestURI().endsWith("IssuedBookList")) {
+			String loginResult="success";
+			String role = (String) session.getAttribute("role");
+			String id = (String) session.getAttribute("id");
+			String sid = request.getParameter("sid");
+				
+			List<BookHistory> bookList = bookService.getIssuedBookList(Integer.parseInt(sid));
+				for (BookHistory bookHistory : bookList) {
+					System.out.println(bookHistory);
+				}
+				
+				RequestDispatcher rd = null;
+				request.setAttribute("loginResult", loginResult);
+				request.setAttribute("bookList", bookList);
+				rd = request.getRequestDispatcher("../JSP/LibrarianWork/AcceptBookPage.jsp");
+				rd.forward(request, response);
+			
+		}
+		
+		if (request.getRequestURI().endsWith("acceptbook")) {
+			String loginResult="success";
+			String role = (String) session.getAttribute("role");
+			String id = (String) session.getAttribute("id");
+			String bookid = request.getParameter("bookid");
+			String bhid = request.getParameter("reqid");
+			String penalty = request.getParameter("penalty");
+			String amountStatus = request.getParameter("amountStatus");
+			String acceptStatus = "failure";
+			String bookUpdateStatus = "failure";
+			
+			
+			if (role == null || !role.equalsIgnoreCase("lib")) {
+				loginResult = "failure";
+			} else {
+				
+					bookUpdateStatus = bookService.updateBookQtyAccept(Integer.parseInt(bookid));
+				
+				if(bookUpdateStatus.equalsIgnoreCase("success")) {
+					acceptStatus = bookService.acceptBook(Integer.parseInt(bhid),Integer.parseInt(penalty),amountStatus);
+				}
+				System.out.println(acceptStatus);
+				
+				
+				RequestDispatcher rd = null;
+				request.setAttribute("loginResult", loginResult);
+				request.setAttribute("bookUpdateStatus", bookUpdateStatus);
+				request.setAttribute("acceptStatus", acceptStatus);
+				
+				rd = request.getRequestDispatcher("../../JSP/LibrarianWork/AcceptBook.jsp");
+				rd.forward(request, response);
+			}
+		}
+		
 
+		/*
 		if (request.getRequestURI().endsWith("searchbook")) {
 			String loginResult = "success";
 			String role = (String) session.getAttribute("role");
 			String id = (String) session.getAttribute("id");
 			String message = null;
 			Boolean eligibility = null;
-			Boolean eligibility2 = null;
 			String result="success";
 			List<Book> booksList = new ArrayList<Book>();
 			if (role == null || !role.equalsIgnoreCase("std")) {
 				loginResult = "failure";
 			} else {
 				eligibility = bookService.bookEligibility(Integer.parseInt(id));
-				eligibility2 = bookService.bookEligibility2(Integer.parseInt(id));
-				System.out.println(eligibility + " "+ eligibility2);
-				if (/*eligibility==false &&*/ eligibility2==false) {
+				if (eligibility==false) {
 					result="failure";
 				} else {
 					String bookname = request.getParameter("bookname");
@@ -185,49 +295,9 @@ public class StudentWork extends HttpServlet {
 			rd.forward(request, response);
 			
 			
-		}
+		}*/
 
-		/*
-		 * if (request.getRequestURI().endsWith("EditBook")) { String role = (String)
-		 * session.getAttribute("role"); String loginResult = "success"; Book book =
-		 * null; if (role == null || !role.equalsIgnoreCase("lib")) { loginResult =
-		 * "failure"; } else { String id = request.getParameter("id"); //book =
-		 * service.getBook(Integer.parseInt(id)); } RequestDispatcher rd = null;
-		 * request.setAttribute("book", book); request.setAttribute("loginResult",
-		 * loginResult); rd =
-		 * request.getRequestDispatcher("../JSP/Book/UpdateBook.jsp");
-		 * rd.forward(request, response);
-		 * 
-		 * }
-		 * 
-		 * if (request.getRequestURI().endsWith("UpdateBook")) { String bookid =
-		 * request.getParameter("bookid"); String bookname =
-		 * request.getParameter("bookname"); String bookcategory =
-		 * request.getParameter("bookcategory"); Integer bookqty =
-		 * Integer.parseInt(request.getParameter("bookqty"));
-		 * 
-		 * Book book = new Book(); book.setBookId(Integer.parseInt(bookid));
-		 * book.setBookName(bookname); book.setBookCategory(bookcategory);
-		 * book.setBookQty(bookqty); System.out.println(book); //String message =
-		 * service.updateBook(book);
-		 * 
-		 * RequestDispatcher rd = null; //request.setAttribute("message", message); rd =
-		 * request.getRequestDispatcher("../../JSP/Book/BookUpdateResult.jsp");
-		 * rd.forward(request, response); }
-		 * 
-		 * if (request.getRequestURI().endsWith("DeleteForm")) { String role = (String)
-		 * session.getAttribute("role"); String loginResult = "success"; String message
-		 * = null; if (role == null || !role.equalsIgnoreCase("lib")) { loginResult =
-		 * "failure"; } else { String bookid = request.getParameter("bookid");
-		 * System.out.println(bookid); //message =
-		 * service.deleteBook(Integer.parseInt(bookid)); } RequestDispatcher rd = null;
-		 * request.setAttribute("message", message); request.setAttribute("loginResult",
-		 * loginResult); rd =
-		 * request.getRequestDispatcher("../JSP/Book/DeleteBook.jsp");
-		 * rd.forward(request, response);
-		 * 
-		 * }
-		 */
+		
 
 	}
 

@@ -2,6 +2,7 @@ package in.ineuron.dao;
 
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -322,7 +323,8 @@ public class BookDAOImpl implements IBookDAO {
 	public Boolean bookEligibility(int id) {
 		Boolean result = true;
 		int rowcount=0;
-		String selectQuery = "select count(*) as row_count from book_history where sid_fk=? and idate IS NOT NULL;";
+		//String selectQuery = "select count(*) as row_count from book_history where sid_fk=? and idate IS NOT NULL;";
+		String selectQuery = "select count(*) as row_count from book_history where sid_fk=? and rdate is NULL and idate is not null;";
 		try {
 			connection = JdbcUtil.getJdbcConnection();
 			if (connection != null) {
@@ -351,6 +353,42 @@ public class BookDAOImpl implements IBookDAO {
 		}
 		return result;
 	}
+	
+	@Override
+	public Boolean bookEligibility2(int id) {
+		Boolean result = true;
+		int rowcount=0;
+		//String selectQuery = "select count(*) as row_count from book_history where sid_fk=? and idate IS NOT NULL;";
+		String selectQuery = "select count(*) as row_count from book_history where sid_fk=? and rdate is NULL and reqdate is not null;";
+		try {
+			connection = JdbcUtil.getJdbcConnection();
+			if (connection != null) {
+				preparedStatement = connection.prepareStatement(selectQuery);
+			}
+			if (preparedStatement != null) {
+				preparedStatement.setInt(1, id);
+				resultSet = preparedStatement.executeQuery();
+
+			}
+			
+			if (resultSet != null) {
+				if (resultSet.next()) {
+					rowcount=resultSet.getInt("row_count");
+					System.out.println(rowcount+"rowcount");
+				}
+			}
+			if(rowcount==3) {
+				result=false;
+			}
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return result;
+	}
+
 
 	@Override
 	public List<BookHistory> pendingRequest(int id) {
@@ -434,4 +472,227 @@ public class BookDAOImpl implements IBookDAO {
 		return bookHistoryList;
 	}
 
+	@Override
+	public List<BookHistory> getBookRequest() {
+		BookHistory bookhistory = null;
+		List<BookHistory> requestBookList = new ArrayList<BookHistory>();
+		String sqlQuery = "select bookname,bookcategory,author,reqdate,bookid,bhid from book_history bh inner join books b on \r\n"
+				+ "bh.bookid_fk=b.bookid where bh.idate is null";
+		try {
+			connection = JdbcUtil.getJdbcConnection();
+			if (connection != null) {
+				preparedStatement = connection.prepareStatement(sqlQuery);
+			}
+			if (preparedStatement != null) {
+				resultSet = preparedStatement.executeQuery();
+
+			}
+			if (resultSet != null) {
+				while (resultSet.next()) {
+					bookhistory = new BookHistory();
+					bookhistory.setBookname(resultSet.getString(1));
+					bookhistory.setBookcategory(resultSet.getString(2));
+					bookhistory.setAuthor(resultSet.getString(3));
+					bookhistory.setReqdate(resultSet.getDate(4));
+					bookhistory.setBookid_fk(resultSet.getInt(5));
+					bookhistory.setBhid(resultSet.getInt(6));
+					
+					requestBookList.add(bookhistory);
+					//return book;
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return requestBookList;
+	}
+
+	@Override
+	public Integer getBookQty(int id) {
+		String sqlGetQty = "select bookqty from books where bookid=?";
+		Integer bookQty = null;
+		try {
+			connection = JdbcUtil.getJdbcConnection();
+			if (connection != null) {
+				preparedStatement = connection.prepareStatement(sqlGetQty);
+			}
+			if (preparedStatement != null) {
+				preparedStatement.setInt(1, id);
+				resultSet = preparedStatement.executeQuery();
+
+			}
+			if (resultSet != null) {
+				if (resultSet.next()) {
+					bookQty=resultSet.getInt(1);
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return bookQty;
+	}
+
+	@Override
+	public String approveBook(Date idate, Date erdate, int libid,int bhid) {
+		String sqlUpdateQuery = "UPDATE book_history SET idate=?, libid_fk=?, erdate=? WHERE bhid=?";
+		String status = "failure";
+		Integer rowsEffected = 0;
+		try {
+			connection = JdbcUtil.getJdbcConnection();
+			if (connection != null) {
+				preparedStatement = connection.prepareStatement(sqlUpdateQuery);
+			}
+			if (preparedStatement != null) {
+				preparedStatement.setDate(1, idate);
+				preparedStatement.setInt(2, libid);
+				preparedStatement.setDate(3, erdate);
+				preparedStatement.setInt(4, bhid);
+				rowsEffected = preparedStatement.executeUpdate();
+			}
+			if(rowsEffected==1) {
+				status="success";
+			}
+			
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return status;
+	}
+
+	@Override
+	public String updateBookQty(int bookId) {
+		String sqlUpdateQuery = "UPDATE books SET bookqty = bookqty - 1 WHERE bookid=?;";
+		String status = "failure";
+		Integer rowsEffected = 0;
+		try {
+			connection = JdbcUtil.getJdbcConnection();
+			if (connection != null) {
+				preparedStatement = connection.prepareStatement(sqlUpdateQuery);
+			}
+			if (preparedStatement != null) {
+				preparedStatement.setInt(1, bookId);
+				rowsEffected = preparedStatement.executeUpdate();
+			}
+			if(rowsEffected==1) {
+				status="success";
+			}
+			
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return status;
+	}
+
+	@Override
+	public List<BookHistory> getIssuedBookList(int id) {
+		BookHistory bookhistory = null;
+		List<BookHistory> requestBookList = new ArrayList<BookHistory>();
+		String sqlQuery = "SELECT books.bookname,books.bookcategory,books.author, librarians.libfname,\r\n"
+				+ "book_history.idate,book_history.bhid,book_history.penalty,\r\n"
+				+ "book_history.amountstatus,book_history.erdate,book_history.bookid_fk\r\n"
+				+ "FROM book_history\r\n"
+				+ "INNER JOIN books ON book_history.bookid_fk = books.bookid\r\n"
+				+ "INNER JOIN librarians ON book_history.libid_fk = librarians.libid where book_history.sid_fk=? and rdate is null;";
+		try {
+			connection = JdbcUtil.getJdbcConnection();
+			if (connection != null) {
+				preparedStatement = connection.prepareStatement(sqlQuery);
+			}
+			if (preparedStatement != null) {
+				preparedStatement.setInt(1, id);
+				resultSet = preparedStatement.executeQuery();
+
+			}
+			if (resultSet != null) {
+				while (resultSet.next()) {
+					bookhistory = new BookHistory();
+					bookhistory.setBookname(resultSet.getString(1));
+					bookhistory.setBookcategory(resultSet.getString(2));
+					bookhistory.setAuthor(resultSet.getString(3));
+					bookhistory.setLibfname(resultSet.getString(4));
+					bookhistory.setIdate(resultSet.getDate(5));
+					bookhistory.setBhid(resultSet.getInt(6));
+					bookhistory.setErdate(resultSet.getDate(9));
+					bookhistory.setBookid_fk(resultSet.getInt(10));
+					
+					requestBookList.add(bookhistory);
+					//return book;
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return requestBookList;
+	}
+
+	@Override
+	public String updateBookQtyAccept(int bookid) {
+		String sqlUpdateQuery = "UPDATE books SET bookqty = bookqty + 1 WHERE bookid=?;";
+		String status = "failure";
+		Integer rowsEffected = 0;
+		try {
+			connection = JdbcUtil.getJdbcConnection();
+			if (connection != null) {
+				preparedStatement = connection.prepareStatement(sqlUpdateQuery);
+			}
+			if (preparedStatement != null) {
+				preparedStatement.setInt(1, bookid);
+				rowsEffected = preparedStatement.executeUpdate();
+			}
+			if(rowsEffected==1) {
+				status="success";
+			}
+			
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return status;
+	}
+
+	@Override
+	public String acceptBook(int bhid, int amount, String amountStatus, Date rdate) {
+		String sqlUpdateQuery = "UPDATE book_history SET penalty=?, amountstatus=?, rdate=? WHERE bhid=?";
+		String status = "failure";
+		Integer rowsEffected = 0;
+		try {
+			connection = JdbcUtil.getJdbcConnection();
+			if (connection != null) {
+				preparedStatement = connection.prepareStatement(sqlUpdateQuery);
+			}
+			if (preparedStatement != null) {
+				preparedStatement.setInt(1, amount);
+				preparedStatement.setString(2, amountStatus);
+				preparedStatement.setDate(3, rdate);
+				preparedStatement.setInt(4, bhid);
+				rowsEffected = preparedStatement.executeUpdate();
+			}
+			if(rowsEffected==1) {
+				status="success";
+			}
+			
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return status;
+	}
+
+	
 }

@@ -43,8 +43,10 @@ public class BookServlet extends HttpServlet {
 			String password = request.getParameter("password");
 			String role = libService.verifyLibrerian(Integer.parseInt(id), password);
 			session.setAttribute("role", role);
+			session.setAttribute("id", id);
 			RequestDispatcher rd = null;
 			request.setAttribute("role", role);
+			request.setAttribute("id", id);
 			//rd = request.getRequestDispatcher("../AdminLoginResult.jsp");
 			rd = request.getRequestDispatcher("../JSP/Book/LibrarianLoginResult.jsp");
 			rd.forward(request, response);

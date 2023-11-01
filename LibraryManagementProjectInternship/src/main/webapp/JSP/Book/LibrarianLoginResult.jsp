@@ -26,9 +26,11 @@
 			<a href="../HTML/Book/EditBook.html">Update Book</a>
 			<a href="../HTML/Book/FindBook.html">Find Book</a>
 			<a href="../HTML/Book/DeleteBook.html">Delete Book</a>
+			<a href="../librarianwork/IssueBook">Issue Book</a>
+			<a href="../HTML/LibrarianWork/BookAcceptPage.html">Accept Book</a>
 		</c:when>
 		<c:otherwise>
-			<h1>You are not authorized to add books1</h1>
+			<h1>You are not authorized to add books</h1>
 		</c:otherwise>
 	</c:choose>
 
