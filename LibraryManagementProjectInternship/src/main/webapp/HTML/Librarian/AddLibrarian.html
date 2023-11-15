@@ -1,4 +1,4 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--  <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
@@ -11,5 +11,209 @@
 		<input type="submit" value="submit" />
 	</form>
 	<button>Submit</button>
+</body>
+</html>-->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+      .header {
+            background-color: #333;
+            color: #fff;
+            overflow: hidden;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+        }
+
+        .company-name {
+            float: left;
+            display: block;
+            padding: 10px 20px;
+            font-weight: bold;
+            font-size: 18px; /* Smaller font size */
+        }
+
+        .navbar-links {
+            float: right;
+        }
+
+        .navbar-links a {
+            display: inline-block; /* Display links horizontally */
+            color: #fff;
+            text-align: center;
+            padding: 10px 15px; /* Smaller padding */
+            text-decoration: none;
+        }
+
+        .navbar-links a:hover {
+            background-color: #555;
+        }
+
+        /* Style for the container */
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 50px; /* Adjust the margin */
+        }
+
+        /* Style for each box */
+       /* .box {
+            width: 200px;
+            padding: 20px;
+            margin: 20px;
+            background-color: #f9f9f9;
+            box-shadow: 0px 0px 5px 0px #333;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .box img {
+            max-width: 100%;
+            max-height: 100px;
+            display: block;
+            margin: 0 auto;
+        }*/
+
+        /* Style for the footer */
+        .footer {
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            padding: 10px 0;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+        }
+
+        /* Style for the copyright symbol */
+        .copyright {
+            font-size: 20px;
+        }
+        
+        /*
+        added for body
+        */
+        /* Global styles */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f1f1f1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+/* Form container */
+.form-container {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    text-align: center;
+}
+
+/* Form styles */
+.my-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Input group styles */
+.input-group {
+    margin: 10px 0;
+}
+
+/* Label styles */
+label {
+    display: block;
+    font-weight: bold;
+}
+
+/* Input field styles */
+.input-field {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+    box-sizing: border-box;
+}
+
+/* Submit button styles */
+.submit-button {
+    width: 100%;
+    padding: 12px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+/* Standalone button styles */
+.standalone-button {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    background-color: #333;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+        
+        
+        
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div class="company-name">iNeuron</div>
+    <div class="navbar-links">
+        <a href="../../index.html">HOME</a>
+        <a href="../../HTML/Librarian/AddLibrarian.html">Add Librarian</a>
+        <a href="../../HTML/Librarian/EditLibrarian.html">Edit Librarian</a>
+        <a href="../../HTML/Librarian/FindLibrarian.html">Find Librarian</a>
+        <a href="../../HTML/Librarian/DeleteForm.html">Delete Librarian</a>
+    </div>
+</div>
+<div class="container">
+
+    <div class="form-container">
+        <form action="../../librarian/AddLibrarian" method="post" class="my-form">
+            <div class="input-group">
+                <label for="libfname">First Name</label>
+                <input type="text" id="libfname" name="libfname" class="input-field" required>
+            </div>
+            <div class="input-group">
+                <label for="liblname">Last Name</label>
+                <input type="text" id="liblname" name="liblname" class="input-field" required>
+            </div>
+            <div class="input-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" class="input-field" required>
+            </div>
+            <input type="submit" value="Submit" class="submit-button">
+        </form>
+    </div>
+
+
+
+</div>
+
+<div class="footer">
+    Library Management &copy; <span class="copyright">&copy;</span> 2023
+</div>
+
 </body>
 </html>
